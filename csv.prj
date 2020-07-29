@@ -1,0 +1,4 @@
+set makeprg=W:\single_file_lib\build
+nnoremap <A-b> :e *
+set path=.,w:\single_file_lib,,**
+" command! BuildHanmdadeCmd !W:\ray\build
