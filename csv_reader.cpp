@@ -1,9 +1,3 @@
-/*
- * - single file library?
- * - struct for csv storage?
- */
-
-
 #include <stdio.h>
 #include <stdint.h>
 
@@ -45,9 +39,17 @@ CheckIfPresent(u32 HashId)
     return(Result);
 }
 
-internal void
-ParseCSV(FILE *CsvFile, FILE *OutFile, Type CsvFileType)
+internal b32
+ParseCSV(char *FileName, FILE *OutFile, Type CsvFileType)
 {
+    FILE *CsvFile;
+    CsvFile = fopen(FileName, "r");
+    if (CsvFile == NULL)
+    {
+        fprintf(stderr, "[ERROR] Unable to open file: %s\n", FileName);
+        return(1);
+    }
+
     char LineBuffer[1024];
     u32 LineNumber = 0;
     while (!feof(CsvFile))
@@ -109,6 +111,9 @@ ParseCSV(FILE *CsvFile, FILE *OutFile, Type CsvFileType)
         }
 
     }
+    fclose(CsvFile);
+
+    return(0);
 }
 
 int main(int ArgCount, char **Args)
@@ -121,31 +126,21 @@ int main(int ArgCount, char **Args)
         return(1);
     }
 
-    FILE *SourceCsvFile;
-    FILE *ToCompareCsvFile;
-    SourceCsvFile = fopen(Args[1], "r");
-    ToCompareCsvFile = fopen(Args[2], "r");
-    if (SourceCsvFile == NULL)
-    {
-        fprintf(stderr, "[ERROR] Unable to open file: %s\n", Args[1]);
-        return(0);
-    }
-    if (ToCompareCsvFile == NULL)
-    {
-        fprintf(stderr, "[ERROR] Unable to open file: %s\n", Args[2]);
-        return(0);
-    }
-
     FILE *OutFile = fopen(Args[3], "wb");
     if(!OutFile)
     {
         fprintf(stderr, "[ERROR] Unable to open output file %s.\n", Args[3]);
+        return(1);
     }
 
-    ParseCSV(SourceCsvFile, OutFile, Type_Source);
-    ParseCSV(ToCompareCsvFile, OutFile, Type_Compare);
+    if (ParseCSV(Args[1], OutFile, Type_Source))
+    {
+        return(1);
+    }
+    if (ParseCSV(Args[2], OutFile, Type_Compare))
+    {
+        return(1);
+    }
 
-    fclose(SourceCsvFile);
-    fclose(ToCompareCsvFile);
     fclose(OutFile);
 }
